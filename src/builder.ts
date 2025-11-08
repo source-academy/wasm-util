@@ -19,7 +19,7 @@ import {
   type WasmBr,
   type WasmBrTable,
   type WasmCall,
-  type WasmComparisonOp,
+  type WasmComparisonOpFor,
   type WasmConversionOp,
   type WasmData,
   type WasmDrop,
@@ -61,7 +61,7 @@ const binaryOp = <
   T extends WasmNumericType,
   const Op extends ((
     | WasmBinaryOp<T>
-    | WasmComparisonOp<T>
+    | WasmComparisonOpFor<T>
   )["op"] extends `${T}.${infer S}`
     ? S
     : never)[]

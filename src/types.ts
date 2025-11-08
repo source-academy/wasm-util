@@ -111,7 +111,7 @@ export type WasmIntTestOp<T extends WasmIntNumericType> = {
   [Op in IntTestOp]: { op: `${T}.${Op}`; right: WasmNumericFor<T> };
 }[IntTestOp];
 
-export type WasmComparisonOp<T extends WasmNumericType> =
+export type WasmComparisonOpFor<T extends WasmNumericType> =
   T extends WasmIntNumericType
     ? {
         [Op in IntComparisonOp]: {
@@ -129,6 +129,12 @@ export type WasmComparisonOp<T extends WasmNumericType> =
         };
       }[FloatComparisonOp]
     : never;
+
+export type WasmComparisonOp =
+  | WasmComparisonOpFor<"i32">
+  | WasmComparisonOpFor<"i64">
+  | WasmComparisonOpFor<"f32">
+  | WasmComparisonOpFor<"f64">;
 
 type ExtractConversion<I extends string> = I extends `${string}_${infer T}`
   ? T extends WasmNumericType
@@ -193,7 +199,7 @@ export type WasmNumericFor<T extends WasmNumericType> =
   | (T extends WasmFloatNumericType ? WasmUnaryOp<T> : never)
   | WasmBinaryOp<T>
   | (T extends WasmIntNumericType ? WasmIntTestOp<T> : never)
-  | WasmComparisonOp<T>
+  | (T extends "i32" ? WasmComparisonOp : never)
   | WasmConversionOp<T>
 
   // below are not numeric instructions, but the results of these are numeric
