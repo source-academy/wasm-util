@@ -40,7 +40,6 @@ import {
   type WasmLabel,
   type WasmLoadOp,
   type WasmLocalGet,
-  type WasmLocals,
   type WasmLocalSet,
   type WasmLocalTee,
   type WasmLoop,
@@ -57,7 +56,9 @@ import {
 } from "./types.js";
 import { typedFromEntries } from "./util.js";
 
-type BuilderAsType<T extends WasmNumericType> = { "~type": T };
+type BuilderAsType<T extends WasmNumericType = WasmNumericType> = {
+  "~type": T;
+};
 
 const binaryOp = <
   T extends WasmNumericType,
@@ -261,17 +262,17 @@ const memory = {
 };
 
 type WasmBlockTypeHelper<T extends WasmBlock | WasmLoop> = {
-  params(...params: WasmNumericType[]): WasmBlockTypeHelper<T>;
-  results(...results: WasmNumericType[]): WasmBlockTypeHelper<T>;
-  locals(...locals: WasmNumericType[]): WasmBlockTypeHelper<T>;
+  params(...params: BuilderAsType[]): WasmBlockTypeHelper<T>;
+  results(...results: BuilderAsType[]): WasmBlockTypeHelper<T>;
+  locals(...locals: BuilderAsType[]): WasmBlockTypeHelper<T>;
 
   body(...instrs: WasmInstruction[]): T;
 };
 
 type WasmIfBlockTypeHelper = {
-  params(...params: WasmNumericType[]): WasmIfBlockTypeHelper;
-  results(...results: WasmNumericType[]): WasmIfBlockTypeHelper;
-  locals(...locals: WasmNumericType[]): WasmIfBlockTypeHelper;
+  params(...params: BuilderAsType[]): WasmIfBlockTypeHelper;
+  results(...results: BuilderAsType[]): WasmIfBlockTypeHelper;
+  locals(...locals: BuilderAsType[]): WasmIfBlockTypeHelper;
 
   then(...thenInstrs: WasmInstruction[]): WasmIf & {
     else(...elseInstrs: WasmInstruction[]): WasmIf;
@@ -279,9 +280,9 @@ type WasmIfBlockTypeHelper = {
 };
 
 type WasmFuncTypeHelper = {
-  params(params: WasmLocals): WasmFuncTypeHelper;
-  locals(locals: WasmLocals): WasmFuncTypeHelper;
-  results(...results: WasmNumericType[]): WasmFuncTypeHelper;
+  params(params: Record<WasmLabel, BuilderAsType>): WasmFuncTypeHelper;
+  locals(locals: Record<WasmLabel, BuilderAsType>): WasmFuncTypeHelper;
+  results(...results: BuilderAsType[]): WasmFuncTypeHelper;
 
   body(...instrs: WasmInstruction[]): WasmFunction;
 };
@@ -308,16 +309,16 @@ const blockLoopHelper =
       localTypes: [],
     };
     return {
-      params(...params: WasmNumericType[]) {
-        blockType.paramTypes.push(...params);
+      params(...params) {
+        blockType.paramTypes.push(...params.map((p) => p["~type"]));
         return this;
       },
-      locals(...locals: WasmNumericType[]) {
-        blockType.localTypes.push(...locals);
+      locals(...locals) {
+        blockType.localTypes.push(...locals.map((l) => l["~type"]));
         return this;
       },
-      results(...results: WasmNumericType[]) {
-        blockType.resultTypes.push(...results);
+      results(...results) {
+        blockType.resultTypes.push(...results.map((r) => r["~type"]));
         return this;
       },
 
@@ -339,15 +340,15 @@ const wasm = {
     };
     return {
       params(...params) {
-        blockType.paramTypes.push(...params);
+        blockType.paramTypes.push(...params.map((p) => p["~type"]));
         return this;
       },
       results(...results) {
-        blockType.resultTypes.push(...results);
+        blockType.resultTypes.push(...results.map((r) => r["~type"]));
         return this;
       },
       locals(...locals) {
-        blockType.localTypes.push(...locals);
+        blockType.localTypes.push(...locals.map((l) => l["~type"]));
         return this;
       },
 
@@ -448,16 +449,19 @@ const wasm = {
       localTypes: {},
     };
     return {
-      params(params: WasmLocals) {
-        funcType.paramTypes = { ...funcType.paramTypes, ...params };
+      params(params) {
+        for (const [key, val] of Object.entries(params))
+          funcType.paramTypes[key as WasmLabel] = val["~type"];
+
         return this;
       },
-      locals(locals: WasmLocals) {
-        funcType.localTypes = { ...funcType.localTypes, ...locals };
+      locals(locals) {
+        for (const [key, val] of Object.entries(locals))
+          funcType.localTypes[key as WasmLabel] = val["~type"];
         return this;
       },
-      results(...results: WasmNumericType[]) {
-        funcType.resultTypes.push(...results);
+      results(...results) {
+        funcType.resultTypes.push(...results.map((r) => r["~type"]));
         return this;
       },
 

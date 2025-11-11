@@ -317,8 +317,7 @@ type WasmControl =
 
 // ------------------------ WASM Module Instructions ----------------------------
 
-type BuilderAsType = { "~type": WasmNumericType };
-export type WasmLocals = Record<WasmLabel, BuilderAsType>;
+export type WasmLocals = Record<WasmLabel, WasmNumericType>;
 export type WasmFuncType = {
   paramTypes: WasmLocals;
   resultTypes: WasmNumericType[];
