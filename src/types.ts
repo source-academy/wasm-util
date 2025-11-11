@@ -286,7 +286,7 @@ export type WasmIf = WasmBlockBase & {
 export type WasmBr = { op: "br"; label: WasmLabel };
 export type WasmBrTable = {
   op: "br_table";
-  labels: WasmLabel[];
+  labels: (WasmLabel | number)[];
   value: WasmNumeric;
 };
 export type WasmCall = {
@@ -353,7 +353,7 @@ export type WasmFunction = {
   op: "func";
   name: WasmLabel;
   funcType: WasmFuncType;
-  body: Exclude<WasmInstruction, WasmFunction>[];
+  body: WasmInstruction[];
 };
 export type WasmStart = { op: "start"; functionName: WasmLabel };
 export type WasmExport = {

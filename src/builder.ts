@@ -271,7 +271,7 @@ type WasmFuncTypeHelper = {
   locals: (locals: WasmLocals) => WasmFuncTypeHelper;
   results: (...results: WasmNumericType[]) => WasmFuncTypeHelper;
 
-  body: (...instrs: Exclude<WasmInstruction, WasmFunction>[]) => WasmFunction;
+  body: (...instrs: WasmInstruction[]) => WasmFunction;
 };
 
 type WasmModuleHelper = {
@@ -388,12 +388,22 @@ const wasm = {
   drop: (value?: WasmInstruction): WasmDrop => ({ op: "drop", value }),
   unreachable: (): WasmUnreachable => ({ op: "unreachable" }),
   br: (label: WasmLabel): WasmBr => ({ op: "br", label }),
-  br_table: (value: WasmNumeric, ...labels: WasmLabel[]): WasmBrTable => ({
+  br_table: (
+    value: WasmNumeric,
+    ...labels: (WasmLabel | number)[]
+  ): WasmBrTable => ({
     op: "br_table",
     labels,
     value,
   }),
-  call: (functionName: WasmLabel) => ({
+  call: (
+    functionName: WasmLabel
+  ): WasmCall & {
+    args: (...args: WasmNumeric[]) => WasmCall;
+  } => ({
+    op: "call",
+    function: functionName,
+    arguments: [],
     args: (...args: WasmNumeric[]): WasmCall => ({
       op: "call",
       function: functionName,
@@ -548,6 +558,31 @@ const wasm = {
 
       build: () => ({ op: "module", ...definitions }),
     };
+  },
+
+  // not a WASM instruction, but a helper to build br_table with blocks
+  buildBrTableBlocks: (
+    { labels, value }: WasmBrTable,
+    ...bodies: WasmInstruction[][]
+  ) => {
+    if (labels.length !== bodies.length) {
+      throw new Error(
+        `Number of labels in br_table (${labels.length}) does not match number of blocks (${bodies.length})`
+      );
+    }
+
+    const buildBlock = (index: number): [WasmBlock, ...WasmInstruction[]] => [
+      wasm
+        .block(typeof labels[index] === "string" ? labels[index] : undefined)
+        .body(
+          ...(index === labels.length - 1
+            ? [wasm.br_table(value, ...labels)]
+            : buildBlock(index + 1))
+        ),
+      ...(bodies[index] ?? []),
+    ];
+
+    return buildBlock(0);
   },
 };
 
