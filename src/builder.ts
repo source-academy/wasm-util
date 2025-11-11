@@ -329,6 +329,17 @@ const blockLoopHelper =
       },
     };
   };
+
+type BuilderMutableType<T extends WasmNumericType> = {
+  "~type": `mut ${T}`;
+};
+const mut: { [T in WasmNumericType]: BuilderMutableType<T> } = {
+  i32: { "~type": "mut i32" },
+  i64: { "~type": "mut i64" },
+  f32: { "~type": "mut f32" },
+  f64: { "~type": "mut f64" },
+};
+
 const wasm = {
   block: blockLoopHelper("block"),
   loop: blockLoopHelper("loop"),
@@ -432,12 +443,12 @@ const wasm = {
 
   global: <T extends WasmNumericType>(
     name: WasmLabel,
-    valueType: T | `mut ${T}`
+    valueType: BuilderAsType<T> | BuilderMutableType<T>
   ) => ({
     init: (initialValue: WasmNumericFor<T>): WasmGlobalFor<T> => ({
       op: "global",
       name,
-      valueType,
+      valueType: valueType["~type"],
       initialValue,
     }),
   }),
@@ -671,6 +682,7 @@ export {
   instrToMethodMap,
   local,
   memory,
+  mut,
   wasm,
   type WatVisitor,
 };
