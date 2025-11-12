@@ -323,6 +323,7 @@ export type WasmFuncType = {
   resultTypes: WasmNumericType[];
   localTypes: WasmLocals;
 };
+
 export type WasmExternType =
   | { type: "memory"; limits: { initial: number; maximum: number | undefined } }
   | { type: "func"; name: WasmLabel; funcType: WasmBlockType };
@@ -357,10 +358,14 @@ export type WasmFunction = {
   body: WasmInstruction[];
 };
 export type WasmStart = { op: "start"; functionName: WasmLabel };
+
+export type WasmExternIdx =
+  | { type: "func"; identifier: WasmLabel }
+  | { type: "memory"; index: number };
 export type WasmExport = {
   op: "export";
   name: string;
-  externType: WasmExternType;
+  externType: WasmExternIdx;
 };
 
 export type WasmModule = {

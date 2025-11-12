@@ -8,7 +8,6 @@ import type {
   WasmData,
   WasmDrop,
   WasmExport,
-  WasmExternType,
   WasmFunction,
   WasmGlobal,
   WasmGlobalGet,
@@ -141,33 +140,29 @@ export class WatGenerator implements WatVisitor {
   }
 
   // Module visitor methods
-  private externTypeToString(externType: WasmExternType): string {
+  visitImportOp(instruction: WasmImport): string {
     let externTypeStr: string;
 
-    if (externType.type === "func") {
-      const params = externType.funcType.paramTypes
+    if (instruction.externType.type === "func") {
+      const params = instruction.externType.funcType.paramTypes
         .map((type) => `(param ${type})`)
         .join(" ");
 
-      const results = externType.funcType.resultTypes
+      const results = instruction.externType.funcType.resultTypes
         .map((type) => `(result ${type})`)
         .join(" ");
 
-      externTypeStr = `(func ${externType.name} ${params} ${results})`;
-    } else if (externType.type === "memory") {
-      const min = externType.limits.initial;
-      const max = externType.limits.maximum ?? "";
+      externTypeStr = `(func ${instruction.externType.name} ${params} ${results})`;
+    } else if (instruction.externType.type === "memory") {
+      const min = instruction.externType.limits.initial;
+      const max = instruction.externType.limits.maximum ?? "";
       externTypeStr = `(memory ${min} ${max})`;
     } else {
-      const _exhaustiveCheck: never = externType;
+      const _exhaustiveCheck: never = instruction.externType;
       throw new Error(`Unsupported import type: ${_exhaustiveCheck}`);
     }
 
-    return externTypeStr;
-  }
-  visitImportOp(instruction: WasmImport): string {
-    const externType = this.externTypeToString(instruction.externType);
-    return `(${instruction.op} "${instruction.moduleName}" "${instruction.itemName}" ${externType})`;
+    return `(${instruction.op} "${instruction.moduleName}" "${instruction.itemName}" ${externTypeStr})`;
   }
   visitGlobalOp(instruction: WasmGlobal): string {
     const init = this.visit(instruction.initialValue);
@@ -193,7 +188,17 @@ export class WatGenerator implements WatVisitor {
     return `(${instruction.op} ${instruction.name} ${params} ${results} ${locals} ${body})`;
   }
   visitExportOp(instruction: WasmExport): string {
-    const externTypeStr = this.externTypeToString(instruction.externType);
+    // const externTypeStr = this.externTypeToString(instruction.externType);
+    let externTypeStr: string;
+
+    if (instruction.externType.type === "func") {
+      externTypeStr = `(func ${instruction.externType.identifier})`;
+    } else if (instruction.externType.type === "memory") {
+      externTypeStr = `(memory ${instruction.externType.index})`;
+    } else {
+      const _exhaustiveCheck: never = instruction.externType;
+      throw new Error(`Unsupported export type: ${_exhaustiveCheck}`);
+    }
     return `(${instruction.op} ${instruction.name} ${externTypeStr})`;
   }
   visitStartOp(instruction: WasmStart): string {
