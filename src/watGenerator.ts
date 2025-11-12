@@ -204,7 +204,7 @@ export class WatGenerator implements WatVisitor {
       const _exhaustiveCheck: never = instruction.externType;
       throw new Error(`Unsupported export type: ${_exhaustiveCheck}`);
     }
-    return `(${instruction.op} ${instruction.name} ${externTypeStr})`;
+    return `(${instruction.op} "${instruction.name}" ${externTypeStr})`;
   }
   visitStartOp(instruction: WasmStart): string {
     return `(${instruction.op} ${instruction.functionName})`;
@@ -212,25 +212,25 @@ export class WatGenerator implements WatVisitor {
 
   visitModuleOp(instruction: WasmModule): string {
     const imports = instruction.imports
-      .map((imp) => this.visit(imp))
-      .join("\n  ");
+      .map((i) => ` ${this.visit(i)}\n`)
+      .join("");
 
     const globals = instruction.globals
-      .map((glob) => this.visit(glob))
-      .join("\n  ");
+      .map((g) => ` ${this.visit(g)}\n`)
+      .join("");
 
-    const datas = instruction.datas
-      .map((data) => this.visit(data))
-      .join("\n  ");
+    const datas = instruction.datas.map((d) => ` ${this.visit(d)}\n`).join("");
 
-    const funcs = instruction.funcs
-      .map((func) => this.visit(func))
-      .join("\n  ");
+    const funcs = instruction.funcs.map((f) => ` ${this.visit(f)}\n`).join("");
 
     const startFunc = instruction.startFunc
       ? this.visit(instruction.startFunc)
       : "";
 
-    return `(${instruction.op} ${imports} ${globals} ${datas} ${funcs} ${startFunc})`;
+    const exports = instruction.exports
+      .map((e) => ` ${this.visit(e)}\n`)
+      .join("");
+
+    return `(${instruction.op}\n${imports}\n${globals}\n${datas}\n${funcs}\n${startFunc}\n${exports})`;
   }
 }
