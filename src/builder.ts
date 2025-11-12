@@ -567,7 +567,7 @@ const wasm = {
             ? [wasm.br_table(value, ...labels)]
             : buildBlock(index + 1))
         ),
-      ...(bodies[index] ?? []),
+      ...(bodies[bodies.length - index - 1] ?? []),
     ];
 
     return buildBlock(0);
