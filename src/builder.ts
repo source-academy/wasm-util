@@ -551,7 +551,7 @@ const wasm = {
   // not a WASM instruction, but a helper to build br_table with blocks
   buildBrTableBlocks: (
     { labels, value }: WasmBrTable,
-    ...bodies: WasmInstruction[][]
+    ...bodies: (WasmInstruction | WasmInstruction[])[]
   ) => {
     if (labels.length !== bodies.length) {
       throw new Error(
@@ -559,16 +559,25 @@ const wasm = {
       );
     }
 
-    const buildBlock = (index: number): [WasmBlock, ...WasmInstruction[]] => [
-      wasm
-        .block(typeof labels[index] === "string" ? labels[index] : undefined)
-        .body(
-          ...(index === labels.length - 1
-            ? [wasm.br_table(value, ...labels)]
-            : buildBlock(index + 1))
-        ),
-      ...(bodies[bodies.length - index - 1] ?? []),
-    ];
+    const buildBlock = (index: number): [WasmBlock, ...WasmInstruction[]] => {
+      const body = bodies[bodies.length - index - 1];
+      if (!body) {
+        throw new Error(
+          `No body found for block at index ${index} in br_table`
+        );
+      }
+
+      return [
+        wasm
+          .block(typeof labels[index] === "string" ? labels[index] : undefined)
+          .body(
+            ...(index === labels.length - 1
+              ? [wasm.br_table(value, ...labels)]
+              : buildBlock(index + 1))
+          ),
+        ...(Array.isArray(body) ? body : [body]),
+      ];
+    };
 
     return buildBlock(0);
   },
