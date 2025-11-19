@@ -21,6 +21,7 @@ import type {
   WasmLocalTee,
   WasmLoop,
   WasmMemoryCopy,
+  WasmMemoryFill,
   WasmModule,
   WasmNop,
   WasmNumericType,
@@ -69,6 +70,12 @@ export class WatGenerator implements WatVisitor {
     const src = this.visit(instruction.source);
     const size = this.visit(instruction.size);
     return `(${instruction.op} ${dest} ${src} ${size})`;
+  }
+  visitMemoryFillOp(instruction: WasmMemoryFill): string {
+    const addr = this.visit(instruction.address);
+    const value = this.visit(instruction.value);
+    const size = this.visit(instruction.numOfBytes);
+    return `(${instruction.op} ${addr} ${value} ${size})`;
   }
 
   // Control visitor methods
@@ -193,7 +200,6 @@ export class WatGenerator implements WatVisitor {
     return `(${instruction.op} ${instruction.name} ${params} ${results} ${locals} ${body})`;
   }
   visitExportOp(instruction: WasmExport): string {
-    // const externTypeStr = this.externTypeToString(instruction.externType);
     let externTypeStr: string;
 
     if (instruction.externType.type === "func") {

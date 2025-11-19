@@ -44,6 +44,7 @@ import {
   type WasmLocalTee,
   type WasmLoop,
   type WasmMemoryCopy,
+  type WasmMemoryFill,
   type WasmModule,
   type WasmNop,
   type WasmNumeric,
@@ -133,11 +134,11 @@ const unaryOp = <
     }
   );
 
-type NumericBuilder<T extends WasmNumericType> = {
+type Builder<T extends WasmNumericType | "local" | "global" | "memory"> = {
   [K in WasmInstruction["op"] as K extends `${T}.${infer S}` ? S : never]: (
     ...args: never[]
-  ) => Extract<WasmNumericFor<T>, { op: K }>;
-} & BuilderAsType<T>;
+  ) => Extract<WasmInstruction, { op: K }>;
+} & (T extends WasmNumericType ? BuilderAsType<T> : unknown);
 
 const loadHelper =
   <const Op extends string>(op: Op) =>
@@ -161,7 +162,7 @@ const i32 = {
   ): WasmStoreOp<"i32"> => ({ op: "i32.store", address, value }),
 
   "~type": "i32",
-} satisfies NumericBuilder<"i32">;
+} satisfies Builder<"i32">;
 
 const i64 = {
   const: (value: number | bigint): WasmConst<"i64"> => ({
@@ -183,7 +184,7 @@ const i64 = {
   ): WasmStoreOp<"i64"> => ({ op: "i64.store", address, value }),
 
   "~type": "i64",
-} satisfies NumericBuilder<"i64">;
+} satisfies Builder<"i64">;
 
 const f32 = {
   const: (value: number): WasmConst<"f32"> => ({
@@ -206,7 +207,7 @@ const f32 = {
   ): WasmStoreOp<"f32"> => ({ op: "f32.store", address, value }),
 
   "~type": "f32",
-} satisfies NumericBuilder<"f32">;
+} satisfies Builder<"f32">;
 
 const f64 = {
   const: (value: number): WasmConst<"f64"> => ({
@@ -229,7 +230,7 @@ const f64 = {
   ): WasmStoreOp<"f64"> => ({ op: "f64.store", address, value }),
 
   "~type": "f64",
-} satisfies NumericBuilder<"f64">;
+} satisfies Builder<"f64">;
 
 const local = {
   get: (label: WasmLabel): WasmLocalGet => ({ op: "local.get", label }),
@@ -243,7 +244,7 @@ const local = {
     label,
     right,
   }),
-};
+} satisfies Builder<"local">;
 
 const global = {
   get: (label: WasmLabel): WasmGlobalGet => ({ op: "global.get", label }),
@@ -252,7 +253,7 @@ const global = {
     label,
     right,
   }),
-};
+} satisfies Builder<"global">;
 
 const memory = {
   copy: (
@@ -260,7 +261,13 @@ const memory = {
     source: WasmNumericFor<"i32">,
     size: WasmNumericFor<"i32">
   ): WasmMemoryCopy => ({ op: "memory.copy", destination, source, size }),
-};
+
+  fill: (
+    address: WasmNumericFor<"i32">,
+    value: WasmNumericFor<"i32">,
+    numOfBytes: WasmNumericFor<"i32">
+  ): WasmMemoryFill => ({ op: "memory.fill", address, value, numOfBytes }),
+} satisfies Builder<"memory">;
 
 type WasmBlockTypeHelper<T extends WasmBlock | WasmLoop> = {
   params(...params: BuilderAsType[]): WasmBlockTypeHelper<T>;
@@ -658,6 +665,7 @@ const instrToMethodMap = {
   "f64.store": "visitStoreOp",
 
   "memory.copy": "visitMemoryCopyOp",
+  "memory.fill": "visitMemoryFillOp",
 
   // control
   unreachable: "visitUnreachableOp",

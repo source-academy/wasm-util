@@ -256,7 +256,14 @@ export type WasmMemoryCopy = {
   size: WasmNumericFor<"i32">;
 };
 
-type WasmMemory = WasmMemoryCopy;
+export type WasmMemoryFill = {
+  op: "memory.fill";
+  address: WasmNumericFor<"i32">;
+  value: WasmNumericFor<"i32">;
+  numOfBytes: WasmNumericFor<"i32">;
+};
+
+type WasmMemory = WasmMemoryCopy | WasmMemoryFill;
 
 // ------------------------ WASM Control Instructions ----------------------------
 
