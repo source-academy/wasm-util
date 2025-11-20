@@ -13,6 +13,7 @@ import {
   intComparisonOp,
   intConversionOp,
   intTestOp,
+  WasmRaw,
   type WasmBinaryOp,
   type WasmBlock,
   type WasmBlockType,
@@ -591,6 +592,11 @@ const wasm = {
 
     return buildBlock(bodies.length - 1);
   },
+
+  raw: (
+    codeFragments: TemplateStringsArray,
+    ...interpolations: (number | string | WasmInstruction | WasmInstruction[])[]
+  ): WasmRaw => ({ op: "raw", codeFragments, interpolations }),
 };
 
 // This maps all WASM instructions to a visitor method name that will
@@ -698,6 +704,8 @@ const instrToMethodMap = {
   export: "visitExportOp",
   start: "visitStartOp",
   module: "visitModuleOp",
+
+  raw: "visitRaw",
 } as const satisfies Record<WasmInstruction["op"], string>;
 
 // ------------------------ WASM Visitor Interface ----------------------------

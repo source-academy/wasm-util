@@ -396,9 +396,17 @@ export type WasmModuleInstruction =
   | WasmStart
   | WasmModule;
 
+// meant to be used with wasm.raw (tagged template)
+export type WasmRaw = {
+  op: "raw";
+  codeFragments: TemplateStringsArray;
+  interpolations: (number | string | WasmInstruction | WasmInstruction[])[];
+};
+
 export type WasmInstruction =
   | WasmNumeric
   | WasmMemory
   | WasmControl
   | WasmVariable
-  | WasmModuleInstruction;
+  | WasmModuleInstruction
+  | WasmRaw;
