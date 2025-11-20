@@ -222,13 +222,13 @@ export type WasmNumeric =
 
 export type WasmLocalSet = {
   op: "local.set";
-  label: WasmLabel;
+  label: WasmLabel | number;
   right: WasmNumeric;
 };
-export type WasmLocalGet = { op: "local.get"; label: WasmLabel };
+export type WasmLocalGet = { op: "local.get"; label: WasmLabel | number };
 export type WasmLocalTee = {
   op: "local.tee";
-  label: WasmLabel;
+  label: WasmLabel | number;
   right: WasmNumeric;
 };
 export type WasmGlobalSet = {
