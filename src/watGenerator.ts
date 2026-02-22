@@ -45,7 +45,6 @@ export class WatGenerator implements WatVisitor {
   }
   visitUnaryOp(instruction: { op: string; right: WasmInstruction }): string {
     const right = this.visit(instruction.right);
-
     return `(${instruction.op} ${right})`;
   }
   visitBinaryOp(instruction: {
@@ -161,7 +160,7 @@ export class WatGenerator implements WatVisitor {
     return `(${instruction.op} ${instruction.label})`;
   }
   visitVariableSetOp(
-    instruction: WasmLocalSet | WasmLocalTee | WasmGlobalSet
+    instruction: WasmLocalSet | WasmLocalTee | WasmGlobalSet,
   ): string {
     const right = this.visit(instruction.right);
     return `(${instruction.op} ${instruction.label} ${right})`;
@@ -263,17 +262,14 @@ export class WatGenerator implements WatVisitor {
     for (let i = 0; i < instruction.interpolations.length; i++) {
       code += instruction.codeFragments[i];
       const interp = instruction.interpolations[i];
-      if (interp) {
-        if (typeof interp === "string" || typeof interp === "number") {
-          code += interp.toString();
-        } else if (Array.isArray(interp)) {
-          code += interp.map((instr) => this.visit(instr)).join(" ");
-        } else {
-          code += this.visit(interp);
-        }
+      if (typeof interp === "string" || typeof interp === "number") {
+        code += interp.toString();
+      } else if (Array.isArray(interp)) {
+        code += interp.map((instr) => this.visit(instr)).join(" ");
+      } else if (interp) {
+        code += this.visit(interp);
       }
     }
-
     code += instruction.codeFragments[instruction.interpolations.length];
     return code;
   }
