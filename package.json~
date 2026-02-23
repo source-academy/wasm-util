@@ -12,6 +12,8 @@
     "type": "git",
     "url": "git+https://github.com/source-academy/wasm-util.git"
   },
+  "license": "ISC",
+  "author": "",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
