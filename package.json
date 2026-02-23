@@ -1,5 +1,6 @@
 {
-  "name": "wasm-util",
+  "name": "@sourceacademy/wasm-util",
+  "packageManager": "yarn@4.6.0",
   "version": "1.0.0",
   "description": "",
   "repository": {
@@ -9,6 +10,22 @@
   "license": "ISC",
   "author": "",
   "type": "module",
-  "main": "index.ts",
-  "scripts": {}
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "prepublishOnly": "yarn build"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3"
+  }
 }
