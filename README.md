@@ -7,7 +7,7 @@ Originally developed for the Source Academy `py-slang` WebAssembly compiler, was
 
 ## Installation
 ```
-npm install
+npm install @sourceacademy/wasm-util
 ```
 
 ## Architecture
