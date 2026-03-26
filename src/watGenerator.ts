@@ -193,7 +193,12 @@ export class WatGenerator implements WatVisitor {
   }
   visitGlobalOp(instruction: WasmGlobal): string {
     const init = this.visit(instruction.initialValue);
-    return `(${instruction.op} ${instruction.name} (${instruction.valueType}) ${init})`;
+
+    const valueType = instruction.valueType.startsWith("mut ")
+      ? `(${instruction.valueType})`
+      : instruction.valueType;
+
+    return `(${instruction.op} ${instruction.name} ${instruction.valueType} ${init})`;
   }
   visitDataOp(instruction: WasmData): string {
     const offset = this.visit(instruction.offset);
