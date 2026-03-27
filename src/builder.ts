@@ -13,7 +13,6 @@ import {
   intComparisonOp,
   intConversionOp,
   intTestOp,
-  type WasmRaw,
   type WasmBinaryOp,
   type WasmBlock,
   type WasmBlockType,
@@ -51,6 +50,7 @@ import {
   type WasmNumeric,
   type WasmNumericFor,
   type WasmNumericType,
+  type WasmRaw,
   type WasmReturn,
   type WasmSelect,
   type WasmStoreOp,
@@ -125,12 +125,12 @@ const unaryOp = <
       [K in keyof Op]: [
         Op[K],
         (
-          ...args: Extract<WasmNumericFor<T>, { op: `${T}.${Op[K]}` }> extends {
+          ...args: Extract<WasmInstruction, { op: `${T}.${Op[K]}` }> extends {
             right: infer R;
           }
             ? [right: R]
             : never
-        ) => Extract<WasmNumericFor<T>, { op: `${T}.${Op[K]}` }>,
+        ) => Extract<WasmInstruction, { op: `${T}.${Op[K]}` }>,
       ];
     },
   );

@@ -89,8 +89,10 @@ export type WasmConst<T extends WasmNumericType> = {
 };
 
 export type WasmUnaryOp<T extends WasmFloatNumericType> = {
-  [Op in FloatUnaryOp]: { op: `${T}.${Op}`; right: WasmNumericFor<T> };
-}[FloatUnaryOp];
+  [T in WasmFloatNumericType]: {
+    [Op in FloatUnaryOp]: { op: `${T}.${Op}`; right: WasmNumericFor<T> };
+  }[FloatUnaryOp];
+}[T];
 
 export type WasmBinaryOp<T extends WasmNumericType> =
   T extends WasmIntNumericType
@@ -112,8 +114,10 @@ export type WasmBinaryOp<T extends WasmNumericType> =
       : never;
 
 export type WasmIntTestOp<T extends WasmIntNumericType> = {
-  [Op in IntTestOp]: { op: `${T}.${Op}`; right: WasmNumericFor<T> };
-}[IntTestOp];
+  [T in WasmIntNumericType]: {
+    [Op in IntTestOp]: { op: `${T}.${Op}`; right: WasmNumericFor<T> };
+  }[IntTestOp];
+}[T];
 
 export type WasmComparisonOp<T extends WasmNumericType> =
   T extends WasmIntNumericType
@@ -200,7 +204,7 @@ export type WasmNumericFor<T extends WasmNumericType> =
   | (T extends WasmFloatNumericType ? WasmUnaryOp<T> : never)
   | WasmBinaryOp<T>
   | (T extends "i32"
-      ? WasmIntTestOp<T> | WasmComparisonOp<WasmNumericType>
+      ? WasmIntTestOp<WasmIntNumericType> | WasmComparisonOp<WasmNumericType>
       : never)
   | WasmConversionOp<T>
   | WasmRaw
