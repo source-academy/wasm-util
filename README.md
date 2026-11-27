@@ -1,4 +1,6 @@
 # wasm-util
+
+Needs Node 24 (the version in `.node-version`; see the [Node.js version](https://github.com/source-academy/documentation/blob/main/app/docs/developers/node-version.md) page).
 wasm-util is a TypeScript library which provides a fluent, programmatic API for generating WebAssembly Text (WAT) code. 
 
 It is designed to make building, manipulating, and emitting WAT strings more intuitive and type-safe as compared to concatenating and building WAT strings by hand. Using the API will produce a WAT IR, which can then be transformed into the final WAT string with a visitor generator which comes with wasm-util.
